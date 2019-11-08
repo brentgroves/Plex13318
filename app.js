@@ -1,18 +1,11 @@
 // https://github.com/vpulim/node-soap
 const soap = require('soap');
 const mqtt = require('mqtt');
+const config = require('../Config13318/config.json');
 
 var mqttClient;
 
 // At the bottom of the wsdl file you will find the http address of the service
-var prodWSDL = '/plex-pro.wsdl';
-var testWSDL = '/plex-test.wsdl';
-
-var AvillaUser = 'BuscheAvillaKorsws@plex.com';
-var AvllaPassword = '5b11b45-f59f-';
-
-var AlbionUser = 'BuscheAlbionWs2@plex.com';
-var AlbionPassword = '6afff48-ba19-';
 
 // CNC422
 // WorkcenterGroup/WorkCenter
@@ -26,14 +19,14 @@ async function getSetupContainers(
   WorkCenter,
   Cycle_Counter_Shift_SL,
 ) {
-  if (ProdServer) plexWSDL = __dirname + prodWSDL;
-  else plexWSDL = __dirname + testWSDL;
+  if (ProdServer) plexWSDL = config.ProdWSDL;
+  else plexWSDL = config.TestWSDL;
 
   var BAS;
   if ('Albion' == PCN) {
-    BAS = new soap.BasicAuthSecurity(AlbionUser, AlbionPassword);
+    BAS = new soap.BasicAuthSecurity(config.AlbionUser, config.AlbionPassword);
   } else if ('Avilla' == PCN) {
-    BAS = new soap.BasicAuthSecurity(AvillaUser, AvllaPassword);
+    BAS = new soap.BasicAuthSecurity(config.AvillaUser, config.AvillaPassword);
   }
 
   console.log(plexWSDL);
@@ -73,12 +66,9 @@ async function getSetupContainers(
       var setupContainer = {};
       for (let i = 0; i < res.length; i++) {
         let container = res[i].Columns.Column;
-        // console.log(res[i].Columns.Column[7].Name + ": " + res[i].Columns.Column[7].Value);
         for (let j = 0; j < container.length; j++) {
-          // console.log(container[j].Name + ': ' + container[j].Value);
           let name = container[j].Name;
           setupContainer[name] = container[j].Value;
-          //            console.log(setupContainer);
         }
         debugger;
         setupContainer['TransDate'] = TransDate;
@@ -98,9 +88,7 @@ async function getSetupContainers(
 
 function main() {
   mqttClient = mqtt.connect(
-    'mqtt://ec2-3-15-151-115.us-east-2.compute.amazonaws.com',
-    // 'mqtt://test.mosquitto.org'
-    // 'mqtt://localhost',
+      config.MQTT
   );
 
   mqttClient.on('connect', function() {
