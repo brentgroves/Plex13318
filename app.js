@@ -77,7 +77,8 @@ async function getSetupContainers(
         setupContainer['Cycle_Counter_Shift_SL'] = Cycle_Counter_Shift_SL;
         // Ready javascript object for transport
         let msgString = JSON.stringify(setupContainer);
-        console.log(setupContainer);
+
+        //console.log(setupContainer);
 
         mqttClient.publish('Plex13318', msgString);
         setupContainer = {};
@@ -103,16 +104,9 @@ function main() {
     const obj = JSON.parse(message.toString()); // payload is a buffer
     let PCN = obj.PCN;
     let WorkCenter = obj.WorkCenter;
+    let TransDate = obj.TransDate;
     let Cycle_Counter_Shift_SL = obj.Cycle_Counter_Shift_SL;
     console.log(message.toString());
-    let date_ob = new Date();
-    let date = ('0' + date_ob.getDate()).slice(-2);
-    let month = ('0' + (date_ob.getMonth() + 1)).slice(-2);
-    let year = date_ob.getFullYear();
-    let hours = date_ob.getHours();
-    let minutes = date_ob.getMinutes();
-    let seconds = date_ob.getSeconds();
-    let TransDate = `${year}-${month}-${date} ${hours}:${minutes}:${seconds}`;
     getSetupContainers(
       TransDate,
       PCN,
@@ -120,6 +114,7 @@ function main() {
       WorkCenter,
       Cycle_Counter_Shift_SL,
     );
+    /*
     getSetupContainers(
       TransDate,
       PCN,
@@ -127,6 +122,7 @@ function main() {
       WorkCenter,
       Cycle_Counter_Shift_SL,
     );
+    */
   });
 }
 main();
