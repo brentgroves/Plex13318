@@ -16,8 +16,7 @@ async function getSetupContainers(
   TransDate,
   PCN,
   ProdServer,
-  WorkCenter,
-  Cycle_Counter_Shift_SL,
+  WorkCenter
 ) {
   if (ProdServer) plexWSDL = config.ProdWSDL;
   else plexWSDL = config.TestWSDL;
@@ -74,7 +73,6 @@ async function getSetupContainers(
         setupContainer['TransDate'] = TransDate;
         setupContainer['ProdServer'] = ProdServer;
         setupContainer['PCN'] = PCN;
-        setupContainer['Cycle_Counter_Shift_SL'] = Cycle_Counter_Shift_SL;
         // Ready javascript object for transport
         let msgString = JSON.stringify(setupContainer);
 
@@ -93,26 +91,31 @@ function main() {
   );
 
   mqttClient.on('connect', function() {
-    mqttClient.subscribe('Kep13318', function(err) {
+    mqttClient.subscribe('Periodic13318', function(err) {
       if (!err) {
-        console.log('subscribed to: Kep13318');
+        console.log('subscribed to: Periodic13318');
       }
     });
   });
   // message is a buffer
   mqttClient.on('message', function(topic, message) {
     const obj = JSON.parse(message.toString()); // payload is a buffer
-    let PCN = obj.PCN;
-    let WorkCenter = obj.WorkCenter;
+    for (let i = 0; i < config.NodeId.length; i++) {
+
+    let PCN = config.NodeId[i].PCN;
+    let WorkCenter = config.NodeId[i].WorkCenter;
     let TransDate = obj.TransDate;
-    let Cycle_Counter_Shift_SL = obj.Cycle_Counter_Shift_SL;
-    console.log(message.toString());
     getSetupContainers(
       TransDate,
       PCN,
       true,
-      WorkCenter,
-      Cycle_Counter_Shift_SL,
+      WorkCenter
+    );
+    getSetupContainers(
+      TransDate,
+      PCN,
+      false,
+      WorkCenter
     );
     /*
     getSetupContainers(
@@ -123,6 +126,7 @@ function main() {
       Cycle_Counter_Shift_SL,
     );
     */
+  }
   });
 }
 main();
