@@ -53,7 +53,7 @@ async function getSetupContainers(
     client.ExecuteDataSource(request_data, function(err, result) {
       // we now have a soapClient - we also need to make sure there's no `err` here.
       if (err) {
-        return res.status(500).json(err);
+        return result.status(500).json(err);
       }
 
       console.log(
