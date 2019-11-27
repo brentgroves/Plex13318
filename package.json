@@ -20,5 +20,8 @@
   "dependencies": {
     "mqtt": "^3.0.0",
     "soap": "^0.30.0"
+  },
+  "devDependencies": {
+    "eslint": "^6.7.1"
   }
 }
