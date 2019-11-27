@@ -81,6 +81,12 @@ async function getSetupContainers(
         mqttClient.publish('Plex13318', msgString);
         setupContainer = {};
       }
+      let endMsg = {
+        TransDate: TransDate,
+      };
+      let endMsgString = JSON.stringify(endMsg);
+      console.log(`Plex13318-2 ${endMsg}`);
+      mqttClient.publish('Plex13318-2', endMsgString);
     });
   });
 }
