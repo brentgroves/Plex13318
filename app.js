@@ -12,12 +12,7 @@ var mqttClient;
 // GA FWD Knuckle/FWD BE 517
 // Plex Workcenter: 61420
 
-async function getSetupContainers(
-  TransDate,
-  PCN,
-  ProdServer,
-  WorkCenter
-) {
+async function getSetupContainers(TransDate, PCN, ProdServer, WorkCenter) {
   if (ProdServer) plexWSDL = config.ProdWSDL;
   else plexWSDL = config.TestWSDL;
 
@@ -28,7 +23,6 @@ async function getSetupContainers(
     BAS = new soap.BasicAuthSecurity(config.AvillaUser, config.AvillaPassword);
   }
 
-  console.log(plexWSDL);
   soap.createClient(plexWSDL, function(err, client) {
     // we now have a soapClient - we also need to make sure there's no `err` here.
     if (err) {
@@ -56,11 +50,6 @@ async function getSetupContainers(
         return result.status(500).json(err);
       }
 
-      console.log(
-        result.ExecuteDataSourceResult.ResultSets.ResultSet[0].Rows.Row[0]
-          .Columns.Column[0].Name,
-      );
-
       var res = result.ExecuteDataSourceResult.ResultSets.ResultSet[0].Rows.Row;
       var setupContainer = {};
       for (let i = 0; i < res.length; i++) {
@@ -76,30 +65,22 @@ async function getSetupContainers(
         // Ready javascript object for transport
         let msgString = JSON.stringify(setupContainer);
 
-        //console.log(setupContainer);
+        console.log(msgString);
 
         mqttClient.publish('Plex13318', msgString);
         setupContainer = {};
       }
-      let endMsg = {
-        TransDate: TransDate,
-      };
-      let endMsgString = JSON.stringify(endMsg);
-      console.log(`Plex13318-2 ${endMsg}`);
-      mqttClient.publish('Plex13318-2', endMsgString);
     });
   });
 }
 
 function main() {
-  mqttClient = mqtt.connect(
-      config.MQTT
-  );
+  mqttClient = mqtt.connect(config.MQTT);
 
   mqttClient.on('connect', function() {
-    mqttClient.subscribe('Periodic13318', function(err) {
+    mqttClient.subscribe('Alarm13318-1', function(err) {
       if (!err) {
-        console.log('subscribed to: Periodic13318');
+        console.log('subscribed to: Alarm13318-1');
       }
     });
   });
@@ -107,32 +88,12 @@ function main() {
   mqttClient.on('message', function(topic, message) {
     const obj = JSON.parse(message.toString()); // payload is a buffer
     for (let i = 0; i < config.NodeId.length; i++) {
-
-    let PCN = config.NodeId[i].PCN;
-    let WorkCenter = config.NodeId[i].WorkCenter;
-    let TransDate = obj.TransDate;
-    getSetupContainers(
-      TransDate,
-      PCN,
-      true,
-      WorkCenter
-    );
-    getSetupContainers(
-      TransDate,
-      PCN,
-      false,
-      WorkCenter
-    );
-    /*
-    getSetupContainers(
-      TransDate,
-      PCN,
-      false,
-      WorkCenter,
-      Cycle_Counter_Shift_SL,
-    );
-    */
-  }
+      let PCN = config.NodeId[i].PCN;
+      let WorkCenter = config.NodeId[i].WorkCenter;
+      let TransDate = obj.TransDate;
+      getSetupContainers(TransDate, PCN, true, WorkCenter);
+      getSetupContainers(TransDate, PCN, false, WorkCenter);
+    }
   });
 }
 main();
