@@ -12,7 +12,7 @@ var mqttClient;
 // GA FWD Knuckle/FWD BE 517
 // Plex Workcenter: 61420
 
-async function getSetupContainers(TransDate, PCN, ProdServer, WorkCenter) {
+async function getSetupContainers(TransDate, PCN, ProdServer, Workcenter, CNC) {
   if (ProdServer) plexWSDL = config.ProdWSDL;
   else plexWSDL = config.TestWSDL;
 
@@ -37,7 +37,7 @@ async function getSetupContainers(TransDate, PCN, ProdServer, WorkCenter) {
         InputParameters: {
           InputParameter: {
             Name: 'Workcenter_Key',
-            Value: `${WorkCenter}`,
+            Value: `${Workcenter}`,
             Required: 'true',
             Output: 'false',
           },
@@ -60,6 +60,8 @@ async function getSetupContainers(TransDate, PCN, ProdServer, WorkCenter) {
         }
         debugger;
         setupContainer['TransDate'] = TransDate;
+        setupContainer['Workcenter'] = Workcenter;
+        setupContainer['CNC'] = CNC;
         setupContainer['ProdServer'] = ProdServer;
         setupContainer['PCN'] = PCN;
         // Ready javascript object for transport
@@ -75,6 +77,10 @@ async function getSetupContainers(TransDate, PCN, ProdServer, WorkCenter) {
 }
 
 function main() {
+  //Test
+  var testDate = '2019-12-15 09:00'
+  getSetupContainers(testDate, 'Avilla', true, '61420','422');
+  getSetupContainers(testDate, 'Avilla', false, '61420','422');
   mqttClient = mqtt.connect(config.MQTT);
 
   mqttClient.on('connect', function() {
@@ -85,15 +91,16 @@ function main() {
     });
   });
   // message is a buffer
-  mqttClient.on('message', function(topic, message) {
-    const obj = JSON.parse(message.toString()); // payload is a buffer
-    for (let i = 0; i < config.NodeId.length; i++) {
-      let PCN = config.NodeId[i].PCN;
-      let WorkCenter = config.NodeId[i].WorkCenter;
-      let TransDate = obj.TransDate;
-      getSetupContainers(TransDate, PCN, true, WorkCenter);
-      getSetupContainers(TransDate, PCN, false, WorkCenter);
-    }
-  });
+  // mqttClient.on('message', function(topic, message) {
+  //   const obj = JSON.parse(message.toString()); // payload is a buffer
+  //   for (let i = 0; i < config.NodeId.length; i++) {
+  //     let PCN = config.NodeId[i].PCN;
+  //     let WorkCenter = config.NodeId[i].WorkCenter;
+  //     let CNC = config.NodeId[i].CNC;
+  //     let TransDate = obj.TransDate;
+  //     getSetupContainers(TransDate, PCN, true, WorkCenter);
+  //     getSetupContainers(TransDate, PCN, false, WorkCenter);
+  //   }
+  // });
 }
 main();
